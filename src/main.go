@@ -13,7 +13,7 @@ func main() {
 
 	// Set the path to look for the configurations file
 	viper.AddConfigPath(".")
-	viper.AddConfigPath("/tmp/vault/secrets")
+	viper.AddConfigPath("/vault/secrets")
 
 	// Enable VIPER to read Environment Variables
 	viper.AutomaticEnv()
