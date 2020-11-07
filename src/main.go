@@ -3,9 +3,8 @@ package main
 import (
 	"fmt"
 
-	config "github.com/urbinaalex17/go-vipper-app/config"
-
 	"github.com/spf13/viper"
+	config "github.com/urbinaalex17/go-vipper-app/src/config"
 )
 
 func main() {
