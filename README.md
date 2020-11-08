@@ -104,3 +104,7 @@ Reading variables without using the model..
 API_KEY is       theKey
 API_SECRET is    theSecret
 ```
+
+## Further documentation and tutorials
+- [Viper Go Application](https://medium.com/@bnprashanth256/reading-configuration-files-and-environment-variables-in-go-golang-c2607f912b63)
+- [Injecting Secrets into Kubernetes Pods via Vault Helm Sidecar](https://learn.hashicorp.com/tutorials/vault/kubernetes-sidecar?in=vault/kubernetes)
