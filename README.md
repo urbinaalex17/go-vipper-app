@@ -1,5 +1,15 @@
 # go-vipper-app
 
+The aim of this repository is to showcase how easily is to work with [Hashicorp Vault](https://www.vaultproject.io) and get specific parameters for your Go applications from your configuration files using [Viper](https://github.com/spf13/viper).
+
+The application just prints the content of the API_KEY and API_SECRET define in the auth.yml configuration file
+store in the directory /vault/secrets, retrieved from Vault running withing the Kubernetes Cluster.
+
+```yaml
+API_KEY: key
+API_SECRET: secret
+```
+
 ## Working with Vault 
 
 Vault must be:
@@ -7,15 +17,16 @@ Vault must be:
 
 Configure Kubernetes authentication:
 ```bash
+export VAULT_TOKEN=<replace>
 vault auth enable kubernetes
 ```
 
 Configure the Kubernetes authentication method:
 ```bash
 vault write auth/kubernetes/config \
-    token_reviewer_jwt="$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)" \
-    kubernetes_host="https://$KUBERNETES_PORT_443_TCP_ADDR:443" \
-    kubernetes_ca_cert=@/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+token_reviewer_jwt="$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)" \
+kubernetes_host="https://$KUBERNETES_PORT_443_TCP_ADDR:443" \
+kubernetes_ca_cert=@/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
 ```
 
 Create a secret:
@@ -29,6 +40,10 @@ Verify that the secret is defined:
 
 ```bash
 vault kv get internal/vipper/auth
+```
+
+The output should resemble the following:
+```bash
 ====== Metadata ======
 Key              Value
 ---              -----
@@ -58,14 +73,34 @@ Kubernetes authentication role:
 
 ```bash
 vault write auth/kubernetes/role/microservice-vipper \
-    bound_service_account_names=microservice-vipper \
-    bound_service_account_namespaces=default \
-    policies=microservice-vipper \
-    ttl=24h
+bound_service_account_names=microservice-vipper \
+bound_service_account_namespaces=default \
+policies=microservice-vipper \
+ttl=24h
 ```
 
-## Kubernetes Apply
+## Kubernetes Deployment
+
+Apply the Kubernetes manifest store in [k8s](k8s) directory:
 
 ```bash
 kubectl apply -f k8s/deployment.yml
+```
+Verify that the application is getting the secrets from Vault reading the logs of the vipper container:
+
+```bash
+kubectl logs \
+$(kubectl get pods -l app=vipper -o jsonpath="{.items[0].metadata.name}") \
+-c vipper
+```
+
+The output should resemble the following:
+```bash
+Reading variables using the model..
+API_KEY is       theKey
+API_SECRET is    theSecret
+
+Reading variables without using the model..
+API_KEY is       theKey
+API_SECRET is    theSecret
 ```
