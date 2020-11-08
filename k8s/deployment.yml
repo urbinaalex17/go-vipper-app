@@ -1,0 +1,39 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: microservice-vipper
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vipper
+  labels:
+    app: vipper
+spec:
+  selector:
+    matchLabels:
+      app: vipper
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        vault.hashicorp.com/agent-inject: "true"
+        vault.hashicorp.com/role: "microservice-vipper"
+        vault.hashicorp.com/agent-inject-secret-auth.yml: "internal/data/vipper/auth"
+        vault.hashicorp.com/agent-inject-template-auth.yml: |
+          {{- with secret "internal/data/vipper/auth" -}}
+          API_KEY: {{ .Data.data.key }}
+          API_SECRET: {{ .Data.data.secret }}
+          {{- end -}}
+      labels:
+        app: vipper
+    spec:
+      serviceAccountName: microservice-vipper
+      containers:
+        - name: vipper
+          image: urbinaalex17/go-vipper-app:0.0.1
+          command: ["/bin/sh"]
+          args:
+            - "-c"
+            - "./main && sleep 3600"
